@@ -1,4 +1,4 @@
-const { users } = require('../data/users.store');
+const { createUser,getUsers } = require('../services/user.service');
 
 const registerUser = (req,res) => {
     const { username,email } = req.body;
@@ -7,22 +7,13 @@ const registerUser = (req,res) => {
         return res.status(400).json({error : 'username and email are required'});
     }
 
-    const existingUser = users.find(
-        (user) => user.email === email
-    );
+    const newUser = createUser(username,email);
 
-    if(existingUser){
-        return res.status(409).json({error : "User already exists"});
+    if(!newUser){
+        return res.status(409).json({
+            error : "User already exists"
+        });
     }
-
-
-    const newUser = {
-        id : users.length +1,
-        username,
-        email,
-    };
-
-    users.push(newUser);
 
     return res.status(201).json({
         message : "user registered successfully",
@@ -32,7 +23,8 @@ const registerUser = (req,res) => {
 };
 
 const getAllUsers = (req,res) => {
-    res.json(users)
+    const users = getUsers();
+    res.send(users);
 }
 
 module.exports = {
