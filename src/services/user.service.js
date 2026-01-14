@@ -1,7 +1,8 @@
 const { users } = require('../data/users.store');
+const bcrypt = require('bcrypt');
 
 
-const createUser = (username,email) => {
+const createUser = async (username,email,password) => {
     const existingUser = users.find(
         (user) => user.email === email
     );
@@ -10,10 +11,12 @@ const createUser = (username,email) => {
         return null;
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = {
         id: users.length + 1,
         username,
         email,
+        password : hashedPassword,
     };
 
     users.push(newUser);
@@ -21,10 +24,15 @@ const createUser = (username,email) => {
 };
 
 const getUsers = () => {
-    return users;
+    return users.map(({ password,...user }) => user);
 };
+
+const findUserbyEmail = (email) => {
+    return users.find((user) => user.email === email);
+}
 
 module.exports = {
     createUser,
     getUsers,
+    findUserbyEmail,
 }
