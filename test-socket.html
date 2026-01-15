@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket Test</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  </head>
+  <body>
+    <script>
+      const socket = io("http://localhost:5000",{
+        query : {
+            userId : "1"
+        }
+      });
+
+      socket.on("connect", () => {
+        console.log("Connected with socket ID:", socket.id);
+      });
+
+      socket.emit("send_message",{
+        from: "3",
+        to : "2",
+        content : "Hello"
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Disconnected");
+      });
+    </script>
+  </body>
+</html>
