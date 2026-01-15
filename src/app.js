@@ -39,6 +39,28 @@ io.on('connection',(socket) => {
     onlineUsers.set(userId, socket.id);
     console.log(`User ${userId} connected with socket ${socket.id}`);
 
+    socket.on('send_message', (payload) => {
+        const { from, to, content } = payload;
+
+        if (!from || !to || !content) {
+            return;
+        }
+
+        const message = {
+            from,
+            to,
+            content,
+            timestamp: Date.now(),
+        };
+
+        const receiverSocketId = onlineUsers.get(to);
+
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('receive_message', message);
+        }
+        });
+
+
     socket.on('disconnect',() => {
         onlineUsers.delete(userId);
         console.log(`User ${userId} disconnected`);
