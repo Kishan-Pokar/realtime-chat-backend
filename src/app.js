@@ -1,7 +1,13 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io')
-const { v4 } = require('uuid');
+const { v4:uuidv4 } = require('uuid');
+
+const {
+  saveMessage,
+  updateMessageStatus,
+  getUndeliveredMessages,
+} = require('./repositories/message.repo');
 
 const { onlineUsers } = require('./data/onlineUsers.store');
 const { messages } = require('./data/messages.store');
@@ -34,7 +40,7 @@ const io = new Server(server,{
     },
 });
 
-io.on('connection',(socket) => {
+io.on('connection', async (socket) => {
     const userId = socket.handshake.query.userId
 
     if(!userId){
@@ -45,41 +51,52 @@ io.on('connection',(socket) => {
     onlineUsers.set(userId, socket.id);
     console.log(`User ${userId} connected with socket ${socket.id}`);
 
-    socket.on('send_message', (payload) => {
+    
+    
+    socket.on('send_message', async (payload) => {
         const { from, to, content } = payload;
-
+        
         if (!from || !to || !content) {
             return;
         }
-
+        
         const message = {
-            id : v4(),
+            id : uuidv4(),
             from,
             to,
             content,
             timestamp: Date.now(),
             status : 'PENDING',
         };
-
+        
         messages.set(message.id, message);
-
+        await saveMessage(message);
+        
         const receiverSocketId = onlineUsers.get(to);
-
+        
         if(!receiverSocketId) return;
-
+        
         message.status = 'SENT';
+        await updateMessageStatus(message.id,'SENT');
         io.to(receiverSocketId).emit('receive_message',message);
     });
-
-    socket.on('message_ack', ({ messageId }) => {
-        const message = messages.get(messageId);
-        if (!message) return;
-
-        message.status = 'DELIVERED';
+    
+    socket.on('message_ack', async ({ messageId }) => {
+        
+        
+        // message.status = 'DELIVERED';
+        await updateMessageStatus(messageId,'DELIVERED')
         console.log(`Message ${messageId} delivered`);
     });
+    
+    const pendingMessages = await getUndeliveredMessages(userId);
 
-
+    for(const msg of pendingMessages) {
+        await updateMessageStatus(msg.id,'SENT');
+        socket.emit('receive_message',msg);
+    }
+    
+    
     socket.on('disconnect',() => {
         onlineUsers.delete(userId);
         console.log(`User ${userId} disconnected`);
