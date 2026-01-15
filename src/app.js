@@ -1,8 +1,10 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io')
+const { v4 } = require('uuid');
 
 const { onlineUsers } = require('./data/onlineUsers.store');
+const { messages } = require('./data/messages.store');
 
 const app = express();
 
@@ -18,6 +20,10 @@ app.use('/users',userRoutes);
 app.get('/',(req,res) => {
     res.json(Object.fromEntries(onlineUsers));
 });
+
+app.get('/messages', (req,res) => {
+    res.json(Object.fromEntries(messages));
+})
 
 
 const server = http.createServer(app);
@@ -47,18 +53,31 @@ io.on('connection',(socket) => {
         }
 
         const message = {
+            id : v4(),
             from,
             to,
             content,
             timestamp: Date.now(),
+            status : 'PENDING',
         };
+
+        messages.set(message.id, message);
 
         const receiverSocketId = onlineUsers.get(to);
 
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit('receive_message', message);
-        }
-        });
+        if(!receiverSocketId) return;
+
+        message.status = 'SENT';
+        io.to(receiverSocketId).emit('receive_message',message);
+    });
+
+    socket.on('message_ack', ({ messageId }) => {
+        const message = messages.get(messageId);
+        if (!message) return;
+
+        message.status = 'DELIVERED';
+        console.log(`Message ${messageId} delivered`);
+    });
 
 
     socket.on('disconnect',() => {
