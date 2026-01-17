@@ -37,15 +37,14 @@ const loginUser = async (req,res) => {
             error : "email and password are required"
         });
     }
-    const user = findUserbyEmail(email);
+    const user = await findUserbyEmail(email);
 
     if(!user){
         return res.status(401).json({
             error : "Invalid Credentials"
         })
     }
-
-    const isMatch = await bcrypt.compare(password,user.password);
+    const isMatch = await bcrypt.compare(password,user.password_hash);
 
     if(!isMatch){
         return res.status(401).json({
@@ -63,13 +62,12 @@ const loginUser = async (req,res) => {
     });
 }
 
-const getAllUsers = (req,res) => {
-    const users = getUsers();
-    res.send(users);
-}
+// const getAllUsers = (req,res) => {
+//     const users = getUsers();
+//     res.send(users);
+// }
 
 module.exports = {
     registerUser,
-    getAllUsers,
     loginUser,
 }
