@@ -1,5 +1,5 @@
-const healthCheck = (req,res) => {
-    res.json({status:'ok'});
+const healthCheck = (req, res) => {
+    res.json({ status: 'ok' });
 };
 
 module.exports = {

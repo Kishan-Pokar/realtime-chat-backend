@@ -14,13 +14,13 @@ const saveMessage = async (message) => {
         message.status
     ];
 
-    await pool.query(query,values);
+    await pool.query(query, values);
 };
 
-const updateMessageStatus = async (id,status) => {
+const updateMessageStatus = async (id, status) => {
     await pool.query(
         `UPDATE messages SET status = $1 WHERE id = $2`,
-        [status,id]
+        [status, id]
     );
 };
 

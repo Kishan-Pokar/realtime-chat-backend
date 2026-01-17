@@ -1,11 +1,11 @@
 const bcrypt = require('bcrypt');
-const { findUser,insertUser } = require('../repositories/user.repo');
-const { v4:uuidv4 } = require('uuid');
+const { findUser, insertUser } = require('../repositories/user.repo');
+const { v4: uuidv4 } = require('uuid');
 
-const createUser = async (username,email,password) => {
+const createUser = async (username, email, password) => {
     const existingUser = await findUser(email);
 
-    if(existingUser){
+    if (existingUser) {
         return null;
     }
 
@@ -14,7 +14,7 @@ const createUser = async (username,email,password) => {
         id: uuidv4(),
         username,
         email,
-        password_hash : hashedPassword,
+        password_hash: hashedPassword,
     };
     await insertUser(newUser);
     delete newUser.password_hash
@@ -22,7 +22,7 @@ const createUser = async (username,email,password) => {
 };
 
 const findUserbyEmail = async (email) => {
-    const user =  await findUser(email);
+    const user = await findUser(email);
     return user
 }
 

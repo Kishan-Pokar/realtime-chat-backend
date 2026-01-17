@@ -1,7 +1,7 @@
 const redis = require('../config/redis');
 
-const setOnline = async (userId,socketId) => {
-    await redis.set(`online:${userId}`,socketId);
+const setOnline = async (userId, socketId) => {
+    await redis.set(`online:${userId}`, socketId);
 }
 
 const setOffline = async (userId) => {
