@@ -1,5 +1,3 @@
-
-
 const { v4: uuidv4 } = require('uuid');
 
 const { saveMessage, updateMessageStatus, getUndeliveredMessages } = require('../repositories/message.repo');
@@ -10,6 +8,7 @@ const createMessage = async (io, payload, socket) => {
     const from = socket.userId;
 
     if (!from || !to || !content) {
+        console.error('Invalid message payload');
         return;
     }
 
@@ -21,32 +20,48 @@ const createMessage = async (io, payload, socket) => {
         timestamp: Date.now(),
         status: 'PENDING',
     };
-    await saveMessage(message);
+    try {
+        await saveMessage(message);
+        
+        const receiverSocketId = await getSocketId(to);
 
-    const receiverSocketId = await getSocketId(to);
+        if (!receiverSocketId) {
+            console.log(`User ${to} offline, message saved as pending`);
+            return;
+        }
 
-    if (!receiverSocketId) {
-        return;
+        await updateMessageStatus(message.id, 'SENT');
+        io.to(receiverSocketId).emit('receive_message', message);
+    } catch (error) {
+        console.error('Error creating message:', error); 
     }
-
-    updateMessageStatus(message.id, 'SENT');
-
-    io.to(receiverSocketId).emit('receive_message', message);
-
 }
 
 const markDelivered = async (messageId) => {
-    await updateMessageStatus(messageId, 'DELIVERED');
-    console.log(`message ${messageId} delivered`);
+    try {
+        await updateMessageStatus(messageId, 'DELIVERED');
+    } catch (error) {
+        console.error('Error marking message delivered:', error); // KEEP
+    }
 }
 
 const deliverPendingMessage = async (socket, userId) => {
-    const pendingMessages = await getUndeliveredMessages(userId);
-
-    for (const msg of pendingMessages) {
-        await updateMessageStatus(msg.id, 'SENT');
-        socket.emit('receive_message', msg);
+    try {
+        const pendingMessages = await getUndeliveredMessages(userId);
+        
+        if (pendingMessages.length > 0) {
+            console.log(`Delivering ${pendingMessages.length} pending messages to ${userId}`); // KEEP
+            
+            for (const msg of pendingMessages) {
+                await updateMessageStatus(msg.id, 'SENT');
+            }
+            
+            socket.emit('offline_messages', pendingMessages);
+        }
+    } catch (error) {
+           console.error('Error delivering pending messages:', error); // KEEP
     }
+      
 }
 
 module.exports = {

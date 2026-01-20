@@ -2,11 +2,13 @@ const { Server } = require('socket.io');
 const handleConnections = require('./connection');
 const jwt = require('jsonwebtoken');
 
-
 module.exports = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: '*',
+            origin: [
+                'http://localhost:3000',
+                'https://chat-app.vercel.app'
+            ],
         }
     });
 
@@ -14,6 +16,7 @@ module.exports = (server) => {
         const token = socket.handshake.auth.token;
 
         if (!token) {
+            console.warn('Connection attempt without token');
             return next(new Error('Authentication Required'));
         }
 
@@ -21,8 +24,8 @@ module.exports = (server) => {
             const payload = jwt.verify(token, process.env.JWT_SECRET);
             socket.userId = payload.userId;
             next();
-            console.log("Authentication Complete, user connected");
         } catch (err) {
+            console.log('Invalid token:', err.message);
             next(new Error('Invalid token'));
         }
     });
@@ -30,4 +33,6 @@ module.exports = (server) => {
     io.on('connection', (socket) => {
         handleConnections(io, socket);
     });
+    
+    console.log('Socket.IO server initialized');
 };

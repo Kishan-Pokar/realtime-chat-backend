@@ -64,8 +64,14 @@ const loginUser = async (req, res) => {
     return res.json({ token });
 }
 
+const getAllUsers = async (req,res) => {
+    const users = await getUsers();
+    res.json(users);
+}
+
 
 module.exports = {
     registerUser,
     loginUser,
+    getAllUsers,
 }

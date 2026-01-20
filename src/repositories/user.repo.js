@@ -21,8 +21,14 @@ const insertUser = async (user) => {
     ]);
 };
 
+const getTheUsers = async () => {
+    const { rows } = await pool.query(`SELECT id, username, email FROM users`);
+    return rows;
+}
+
 
 module.exports = {
     findUser,
     insertUser,
+    getTheUsers
 }

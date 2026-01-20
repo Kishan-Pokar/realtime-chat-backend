@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { findUser, insertUser } = require('../repositories/user.repo');
+const { findUser, insertUser, getTheUsers } = require('../repositories/user.repo');
 const { v4: uuidv4 } = require('uuid');
 
 const createUser = async (username, email, password) => {
@@ -26,7 +26,13 @@ const findUserbyEmail = async (email) => {
     return user
 }
 
+const getUsers = async () => {
+    const allUser = await getTheUsers();
+    return allUser;
+}
+
 module.exports = {
     createUser,
     findUserbyEmail,
+    getUsers,
 }

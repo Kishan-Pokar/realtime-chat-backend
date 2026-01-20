@@ -26,14 +26,20 @@ const updateMessageStatus = async (id, status) => {
 
 const getUndeliveredMessages = async (userId) => {
     const { rows } = await pool.query(
-        `SELECT * FROM messages
+        `SELECT 
+            id,
+            sender_id as "from",
+            receiver_id as "to",
+            content,
+            timestamp,
+            status
+        FROM messages
         WHERE receiver_id = $1 AND status != 'DELIVERED'
         ORDER BY timestamp ASC`,
         [userId]
     );
     return rows;
 }
-
 
 module.exports = {
     saveMessage,
