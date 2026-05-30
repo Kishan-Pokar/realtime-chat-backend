@@ -11,7 +11,6 @@ router.post('/login', loginUser);
 
 router.get('/', getAllUsers);
 
-
-
-
 module.exports = router;
+
+
