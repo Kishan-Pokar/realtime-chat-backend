@@ -3,6 +3,37 @@
 A production-ready realtime chat backend built with Node.js, Express, Socket.IO, PostgreSQL, and Redis. Supports real-time message delivery, offline message storage with store-and-forward, presence tracking, and JWT-secured WebSocket connections.
 
 ---
+Live Demo
+
+A simple frontend has been built to demonstrate the backend's functionality, deployed on Vercel. Backend is deployed on Render.
+
+Site: https://realtime-chat-app-two-jade.vercel.app/
+
+To test real-time chat:
+
+
+Open the site and log in with:
+
+Email: kip@gmail.com
+Password: 123456
+Username: kishan
+
+
+
+Open the site again in an incognito window (or a different browser) and log in with:
+
+Email: k@gmail.com
+Password: 123456
+Username: kip
+
+
+
+Start chatting between the two windows to see real-time message delivery, ACK-based confirmations, and presence tracking in action.
+
+
+
+Note: These are demo credentials on a free-tier deployment for showcasing functionality only — not real accounts.
+
 
 ## Architecture
 
